@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Tallinjen 0–20</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0;
+    --bg-pattern: #f3ede4;
+    --card: #ffffff;
+    --primary: #4a7c59;
+    --primary-dark: #3a6347;
+    --primary-light: #e8f0eb;
+    --accent: #d4875e;
+    --accent-dark: #b86e48;
+    --accent-light: #fdf0e8;
+    --sky: #5b9fc9;
+    --sky-light: #e6f1f8;
+    --berry: #9b5c8f;
+    --berry-light: #f3e8f0;
+    --text: #3a3330;
+    --text-light: #8a7e76;
+    --correct: #4caf6a;
+    --correct-bg: #edf8f0;
+    --wrong: #e25c5c;
+    --wrong-bg: #fceaea;
+    --line-color: #bfb5a8;
+    --shadow-sm: 0 2px 8px rgba(58,51,48,0.06);
+    --shadow: 0 4px 16px rgba(58,51,48,0.08);
+    --shadow-lg: 0 12px 40px rgba(58,51,48,0.14);
+    --radius: 18px;
+    --radius-lg: 24px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    background-image: radial-gradient(circle at 20% 50%, rgba(74,124,89,0.04) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 20%, rgba(212,135,94,0.04) 0%, transparent 50%);
+    color: var(--text);
+    min-height: 100dvh;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  /* ===== MENU SCREEN ===== */
+  .screen { display: none; min-height: 100dvh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  #menuScreen {
+    align-items: center;
+    padding: 32px 20px;
+  }
+
+  .menu-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .menu-header h1 {
+    font-family: 'Baloo 2', cursive;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--primary);
+    line-height: 1.1;
+  }
+
+  .menu-header p {
+    font-size: 1rem;
+    color: var(--text-light);
+    margin-top: 4px;
+    font-weight: 600;
+  }
+
+  .menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .menu-card {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    padding: 28px 20px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 3px solid transparent;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .menu-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+  }
+
+  .menu-card:nth-child(1)::before { background: var(--primary); }
+  .menu-card:nth-child(2)::before { background: var(--accent); }
+  .menu-card:nth-child(3)::before { background: var(--sky); }
+  .menu-card:nth-child(4)::before { background: var(--berry); }
+
+  .menu-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .menu-card:active {
+    transform: translateY(-1px) scale(0.98);
+  }
+
+  .menu-card .icon {
+    font-size: 2.4rem;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .menu-card .title {
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .menu-card .desc {
+    font-size: 0.78rem;
+    color: var(--text-light);
+    margin-top: 6px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  /* ===== GAME SCREEN ===== */
+  #gameScreen {
+    align-items: center;
+    padding: 16px 16px 24px;
+  }
+
+  .game-topbar {
+    width: 100%;
+    max-width: 680px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .btn-back {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    border: 2px solid #e2ddd6;
+    background: var(--card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+    color: var(--text-light);
+  }
+
+  .btn-back:hover { border-color: var(--text-light); background: #f5f0ea; }
+
+  .game-title {
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.25rem;
+    font-weight: 700;
+    flex: 1;
+    text-align: center;
+  }
+
+  .game-title.t-primary { color: var(--primary); }
+  .game-title.t-accent { color: var(--accent); }
+  .game-title.t-sky { color: var(--sky); }
+  .game-title.t-berry { color: var(--berry); }
+
+  .spacer-44 { width: 44px; flex-shrink: 0; }
+
+  /* Progress */
+  .progress-wrap {
+    width: 100%;
+    max-width: 680px;
+    margin-bottom: 20px;
+  }
+
+  .progress-track {
+    width: 100%;
+    height: 16px;
+    background: #e8e2da;
+    border-radius: 99px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    min-width: 0;
+  }
+
+  .progress-fill.c-primary { background: linear-gradient(90deg, var(--primary), #6cbf7f); }
+  .progress-fill.c-accent { background: linear-gradient(90deg, var(--accent), #f0b88a); }
+  .progress-fill.c-sky { background: linear-gradient(90deg, var(--sky), #8cc8e8); }
+  .progress-fill.c-berry { background: linear-gradient(90deg, var(--berry), #c98bbe); }
+
+  .progress-text {
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-light);
+    margin-top: 4px;
+  }
+
+  /* Number line shared */
+  .nl-card {
+    width: 100%;
+    max-width: 680px;
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    padding: 28px 20px 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+
+  .nl-prompt {
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 22px;
+    line-height: 1.35;
+  }
+
+  .nl-prompt .highlight {
+    display: inline-block;
+    background: var(--accent-light);
+    color: var(--accent-dark);
+    padding: 2px 12px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 1.2rem;
+  }
+
+  .number-line {
+    position: relative;
+    width: 100%;
+    height: 76px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6px;
+  }
+
+  .nl-track {
+    position: absolute;
+    top: 50%;
+    left: 6px; right: 6px;
+    height: 4px;
+    background: var(--line-color);
+    border-radius: 2px;
+    transform: translateY(-50%);
+  }
+
+  .tick {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .tick-bar {
+    width: 2px;
+    height: 13px;
+    background: var(--line-color);
+    border-radius: 2px;
+  }
+
+  .tick-num {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text);
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.25s ease;
+  }
+
+  .tick-num.empty {
+    color: transparent;
+  }
+
+  .tick-num.q {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 800;
+    border: 2.5px solid var(--accent);
+    animation: pulse-q 2s ease-in-out infinite;
+  }
+
+  .tick-num.q.active-q {
+    background: var(--accent);
+    color: #fff;
+    animation: pulse-qa 1.2s ease-in-out infinite;
+    transform: scale(1.08);
+  }
+
+  .tick-num.revealed {
+    background: var(--correct-bg);
+    color: var(--correct);
+    border: 2.5px solid var(--correct);
+    animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  /* Placera: tappable slots */
+  .tick-num.slot {
+    background: #f0ebe4;
+    border: 2.5px dashed var(--line-color);
+    cursor: pointer;
+    color: transparent;
+  }
+
+  .tick-num.slot:hover, .tick-num.slot:active {
+    background: #e8e2d9;
+    border-color: var(--text-light);
+  }
+
+  .tick-num.slot.wrong-flash {
+    border-color: var(--wrong);
+    background: var(--wrong-bg);
+    animation: shake 0.45s ease;
+  }
+
+  .tick-num.slot.correct-placed {
+    background: var(--correct-bg);
+    color: var(--correct);
+    border: 2.5px solid var(--correct);
+    font-weight: 800;
+    animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  /* Jump marker */
+  .tick-num.jump-start {
+    background: var(--sky-light);
+    color: var(--sky);
+    border: 2.5px solid var(--sky);
+    font-weight: 800;
+  }
+
+  .jump-arrow-layer {
+    position: absolute;
+    top: -6px;
+    left: 6px;
+    right: 6px;
+    height: 30px;
+    pointer-events: none;
+  }
+
+  /* Target number display for "Placera" */
+  .target-display {
+    text-align: center;
+    margin-bottom: 18px;
+  }
+
+  .target-num {
+    display: inline-block;
+    font-family: 'Baloo 2', cursive;
+    font-size: 2.8rem;
+    font-weight: 800;
+    color: var(--primary);
+    background: var(--primary-light);
+    width: 80px;
+    height: 80px;
+    line-height: 80px;
+    border-radius: 20px;
+    border: 3px solid var(--primary);
+  }
+
+  /* Answers area */
+  .answer-card {
+    width: 100%;
+    max-width: 680px;
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    box-shadow: var(--shadow);
+  }
+
+  .answer-label {
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 14px;
+  }
+
+  .answer-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .ans-btn {
+    width: 68px;
+    height: 68px;
+    border: 3px solid #e2ddd6;
+    border-radius: 16px;
+    background: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ans-btn:hover { border-color: var(--primary); background: var(--primary-light); transform: translateY(-2px); }
+  .ans-btn:active { transform: translateY(0) scale(0.96); }
+
+  .ans-btn.correct { border-color: var(--correct); background: var(--correct-bg); color: var(--correct); animation: bounce-ok 0.5s ease; }
+  .ans-btn.wrong { border-color: var(--wrong); background: var(--wrong-bg); color: var(--wrong); animation: shake 0.45s ease; }
+  .ans-btn.disabled { pointer-events: none; opacity: 0.45; }
+
+  /* Big choice buttons for "nearest" */
+  .choice-row {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+  }
+
+  .choice-btn {
+    flex: 1;
+    max-width: 180px;
+    padding: 24px 16px;
+    border: 3px solid #e2ddd6;
+    border-radius: var(--radius);
+    background: #fff;
+    font-family: 'Baloo 2', cursive;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+  }
+
+  .choice-btn:hover { border-color: var(--sky); background: var(--sky-light); transform: translateY(-3px); box-shadow: var(--shadow); }
+  .choice-btn:active { transform: translateY(0) scale(0.97); }
+  .choice-btn.correct { border-color: var(--correct); background: var(--correct-bg); color: var(--correct); animation: bounce-ok 0.5s ease; }
+  .choice-btn.wrong { border-color: var(--wrong); background: var(--wrong-bg); color: var(--wrong); animation: shake 0.45s ease; }
+
+  /* Nearest: highlight on number line */
+  .tick-num.nl-highlight {
+    background: var(--sky-light);
+    color: var(--sky);
+    border: 2.5px solid var(--sky);
+    font-weight: 800;
+  }
+
+  .tick-num.nl-option-a {
+    background: var(--berry-light);
+    color: var(--berry);
+    border: 2.5px solid var(--berry);
+    font-weight: 800;
+  }
+
+  .tick-num.nl-option-b {
+    background: var(--accent-light);
+    color: var(--accent-dark);
+    border: 2.5px solid var(--accent);
+    font-weight: 800;
+  }
+
+  /* ===== OVERLAYS ===== */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(58,51,48,0.35);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+
+  .overlay.visible { display: flex; }
+
+  .done-card {
+    background: #fff;
+    border-radius: 28px;
+    padding: 44px 36px;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    max-width: 360px;
+    width: 100%;
+    animation: scaleIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  .done-star { font-size: 3.6rem; margin-bottom: 12px; animation: spinStar 1s ease; }
+  .done-card h2 { font-family: 'Baloo 2', cursive; font-size: 1.7rem; color: var(--primary); margin-bottom: 6px; }
+  .done-card p { font-size: 0.95rem; color: var(--text-light); margin-bottom: 24px; font-weight: 600; }
+
+  .btn-done {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 36px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin: 0 6px;
+  }
+
+  .btn-done:hover { background: var(--primary-dark); transform: translateY(-2px); }
+  .btn-done.secondary { background: #e2ddd6; color: var(--text); }
+  .btn-done.secondary:hover { background: #d5cfc6; }
+
+  .streak-toast {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%) scale(0);
+    background: var(--wrong);
+    color: #fff;
+    padding: 14px 28px;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 1rem;
+    z-index: 50;
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+
+  .streak-toast.visible {
+    transform: translate(-50%,-50%) scale(1);
+    opacity: 1;
+  }
+
+  .nl-card.flash-ok { animation: flashGreen 0.55s ease; }
+  .nl-card.flash-no { animation: flashRed 0.55s ease; }
+
+  /* Animations */
+  @keyframes pulse-q {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  @keyframes pulse-qa {
+    0%,100% { transform: scale(1.08); }
+    50% { transform: scale(1.16); }
+  }
+  @keyframes pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes bounce-ok {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.13); }
+    60% { transform: scale(0.96); }
+    100% { transform: scale(1); }
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-7px); }
+    40% { transform: translateX(7px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(3px); }
+  }
+  @keyframes scaleIn {
+    0% { transform: scale(0.6); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes spinStar {
+    0% { transform: rotate(-25deg) scale(0); }
+    60% { transform: rotate(8deg) scale(1.2); }
+    100% { transform: rotate(0) scale(1); }
+  }
+  @keyframes flashGreen {
+    0% { box-shadow: var(--shadow); }
+    30% { box-shadow: 0 0 0 5px rgba(76,175,106,0.35); }
+    100% { box-shadow: var(--shadow); }
+  }
+  @keyframes flashRed {
+    0% { box-shadow: var(--shadow); }
+    30% { box-shadow: 0 0 0 5px rgba(226,92,92,0.35); }
+    100% { box-shadow: var(--shadow); }
+  }
+
+  @media (max-width: 480px) {
+    .tick-num { font-size: 0.65rem; width: 20px; height: 20px; border-radius: 6px; }
+    .tick-bar { height: 10px; width: 2px; }
+    .tick { gap: 3px; }
+    .ans-btn { width: 56px; height: 56px; font-size: 1.2rem; }
+    .nl-card { padding: 22px 6px 18px; }
+    .number-line { padding: 0 2px; }
+    .target-num { font-size: 2.2rem; width: 66px; height: 66px; line-height: 66px; border-radius: 16px; }
+    .menu-card { padding: 22px 14px; }
+    .menu-card .icon { font-size: 2rem; }
+    .choice-btn { font-size: 1.8rem; padding: 18px 12px; }
+  }
+
+  @media (max-width: 380px) {
+    .tick-num { font-size: 0.55rem; width: 17px; height: 17px; border-radius: 5px; }
+    .tick-bar { height: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- MENU -->
+<div class="screen active" id="menuScreen">
+  <div class="menu-header">
+    <h1>Tallinjen 0–20</h1>
+    <p>Välj en övning!</p>
+  </div>
+  <div class="menu-grid">
+    <div class="menu-card" onclick="startGame('place')">
+      <span class="icon">📍</span>
+      <div class="title">Placera talet</div>
+      <div class="desc">Tryck på rätt plats på tallinjen</div>
+    </div>
+    <div class="menu-card" onclick="startGame('missing')">
+      <span class="icon">❓</span>
+      <div class="title">Vilket tal saknas?</div>
+      <div class="desc">Hitta de gömda talen</div>
+    </div>
+    <div class="menu-card" onclick="startGame('nearest')">
+      <span class="icon">🎯</span>
+      <div class="title">Vad är närmast?</div>
+      <div class="desc">Vilket tal ligger närmast?</div>
+    </div>
+    <div class="menu-card" onclick="startGame('jump')">
+      <span class="icon">🦘</span>
+      <div class="title">Hoppa på tallinjen</div>
+      <div class="desc">Hoppa steg framåt eller bakåt</div>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="gameScreen">
+  <div class="game-topbar">
+    <button class="btn-back" onclick="goMenu()">←</button>
+    <div class="game-title" id="gameTitle">Titel</div>
+    <div class="spacer-44"></div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text" id="progressText">0 / 5</div>
+  </div>
+
+  <div class="nl-card" id="nlCard">
+    <div id="targetArea"></div>
+    <div class="nl-prompt" id="nlPrompt"></div>
+    <div class="number-line" id="numberLine">
+      <div class="nl-track"></div>
+    </div>
+  </div>
+
+  <div class="answer-card" id="answerCard">
+    <div class="answer-label" id="answerLabel">Välj rätt svar:</div>
+    <div id="answerArea"></div>
+  </div>
+</div>
+
+<!-- DONE OVERLAY -->
+<div class="overlay" id="doneOverlay">
+  <div class="done-card">
+    <div class="done-star">⭐</div>
+    <h2>Bra jobbat!</h2>
+    <p>Du klarade 5 rätt i rad!</p>
+    <div>
+      <button class="btn-done secondary" onclick="goMenu(); closeDone();">Tillbaka</button>
+      <button class="btn-done" onclick="restartExercise()">Träna igen</button>
+    </div>
+  </div>
+</div>
+
+<div class="streak-toast" id="streakToast">Försök igen från början!</div>
+
+<script>
+// ===== CONFIG =====
+const MIN = 0;
+const MAX = 20;
+const GOAL = 5;
+
+// ===== STATE =====
+let mode = '';          // place | missing | nearest | jump
+let streak = 0;
+let busy = false;
+
+// Missing-mode state
+let hiddenPos = [];
+let hiddenIdx = 0;
+
+// Color map
+const colorMap = {
+  place:   { title: 't-primary', bar: 'c-primary' },
+  missing: { title: 't-accent',  bar: 'c-accent'  },
+  nearest: { title: 't-sky',     bar: 'c-sky'     },
+  jump:    { title: 't-berry',   bar: 'c-berry'   },
+};
+
+const titleMap = {
+  place:   'Placera talet',
+  missing: 'Vilket tal saknas?',
+  nearest: 'Vad är närmast?',
+  jump:    'Hoppa på tallinjen',
+};
+
+// ===== HELPERS =====
+const $ = id => document.getElementById(id);
+const shuffle = a => { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; };
+const rand = (lo,hi) => Math.floor(Math.random()*(hi-lo+1))+lo;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+
+function updateProgress() {
+  const pct = Math.min((streak/GOAL)*100, 100);
+  $('progressFill').style.width = pct + '%';
+  $('progressText').textContent = streak + ' / ' + GOAL;
+}
+
+function flashCard(ok) {
+  const c = $('nlCard');
+  c.classList.remove('flash-ok','flash-no');
+  void c.offsetWidth;
+  c.classList.add(ok ? 'flash-ok' : 'flash-no');
+  setTimeout(() => c.classList.remove('flash-ok','flash-no'), 600);
+}
+
+function showToast() {
+  const t = $('streakToast');
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 1400);
+}
+
+function onCorrect(cb) {
+  flashCard(true);
+  streak++;
+  updateProgress();
+  if (streak >= GOAL) {
+    setTimeout(() => $('doneOverlay').classList.add('visible'), 600);
+  } else {
+    setTimeout(cb, 700);
+  }
+}
+
+function onWrong() {
+  flashCard(false);
+  if (streak > 0) { streak = 0; updateProgress(); showToast(); }
+}
+
+// ===== NAVIGATION =====
+function startGame(m) {
+  mode = m;
+  streak = 0;
+  busy = false;
+
+  const cm = colorMap[m];
+  $('gameTitle').textContent = titleMap[m];
+  $('gameTitle').className = 'game-title ' + cm.title;
+  $('progressFill').className = 'progress-fill ' + cm.bar;
+  updateProgress();
+
+  showScreen('gameScreen');
+  generateRound();
+}
+
+function goMenu() {
+  showScreen('menuScreen');
+}
+
+function closeDone() {
+  $('doneOverlay').classList.remove('visible');
+}
+
+function restartExercise() {
+  closeDone();
+  streak = 0;
+  updateProgress();
+  generateRound();
+}
+
+// ===== ROUND GENERATOR =====
+function generateRound() {
+  busy = false;
+  switch(mode) {
+    case 'place':   genPlace();   break;
+    case 'missing': genMissing(); break;
+    case 'nearest': genNearest(); break;
+    case 'jump':    genJump();    break;
+  }
+}
+
+// ===== 1. PLACERA TALET =====
+function genPlace() {
+  const target = rand(MIN + 1, MAX - 1);
+
+  // Show target
+  $('targetArea').innerHTML = `<div class="target-display"><div class="target-num">${target}</div></div>`;
+  $('nlPrompt').innerHTML = 'Tryck på rätt plats!';
+
+  // Show only landmark numbers, hide target and its neighbors
+  // Landmarks: 0 and MAX always visible, plus maybe 5 for 0-10
+  const landmarks = new Set([MIN, MAX]);
+  if (MAX >= 10) landmarks.add(10);
+  if (MAX >= 20) { landmarks.add(5); landmarks.add(15); }
+  landmarks.delete(target); // never show target
+
+  buildNumberLine(i => {
+    if (i === target) return 'slot';
+    if (landmarks.has(i)) return 'show';
+    // hide some numbers near target to make it harder
+    if (Math.abs(i - target) <= 1) return 'slot';
+    return 'show';
+  });
+
+  // Make slots tappable
+  document.querySelectorAll('.tick-num.slot').forEach(el => {
+    el.addEventListener('click', () => handlePlaceTap(el, parseInt(el.dataset.num), target));
+  });
+
+  $('answerCard').style.display = 'none';
+}
+
+function handlePlaceTap(el, tapped, target) {
+  if (busy) return;
+  if (tapped === target) {
+    busy = true;
+    el.classList.remove('slot');
+    el.classList.add('correct-placed');
+    el.textContent = target;
+    onCorrect(() => generateRound());
+  } else {
+    busy = true;
+    el.classList.add('wrong-flash');
+    onWrong();
+    setTimeout(() => { el.classList.remove('wrong-flash'); busy = false; }, 500);
+  }
+}
+
+// ===== 2. VILKET TAL SAKNAS? =====
+function genMissing() {
+  $('targetArea').innerHTML = '';
+  $('answerCard').style.display = '';
+
+  const hideCount = rand(2, 3);
+  const cands = [];
+  for (let i = MIN + 1; i < MAX; i++) {
+    cands.push(i);
+    if (i >= 11 && i <= 19) cands.push(i); // double weight for 11-19
+  }
+  const picked = new Set();
+  shuffle(cands).forEach(c => { if (picked.size < hideCount) picked.add(c); });
+  hiddenPos = [...picked].sort((a,b) => a - b);
+  hiddenIdx = 0;
+
+  buildNumberLine(i => {
+    if (hiddenPos.includes(i)) return 'question';
+    return 'show';
+  });
+
+  highlightActiveQ();
+
+  $('nlPrompt').innerHTML = hiddenPos.length > 1 ? 'Vilka tal saknas?' : 'Vilket tal saknas?';
+  $('answerLabel').textContent = 'Välj rätt tal:';
+
+  // Build answers
+  const distractors = new Set();
+  while (distractors.size < 4) {
+    const d = rand(MIN, MAX);
+    if (!hiddenPos.includes(d) && !distractors.has(d)) distractors.add(d);
+  }
+  const opts = shuffle([...hiddenPos, ...distractors]);
+  const grid = document.createElement('div');
+  grid.className = 'answer-grid';
+  opts.forEach(n => {
+    const b = document.createElement('button');
+    b.className = 'ans-btn';
+    b.textContent = n;
+    b.addEventListener('click', () => handleMissingTap(b, n));
+    grid.appendChild(b);
+  });
+  $('answerArea').innerHTML = '';
+  $('answerArea').appendChild(grid);
+}
+
+function highlightActiveQ() {
+  hiddenPos.forEach(p => {
+    const el = document.getElementById('t-' + p);
+    if (el) el.classList.remove('active-q');
+  });
+  if (hiddenIdx < hiddenPos.length) {
+    const el = document.getElementById('t-' + hiddenPos[hiddenIdx]);
+    if (el && el.classList.contains('q')) el.classList.add('active-q');
+  }
+}
+
+function handleMissingTap(btn, num) {
+  if (busy) return;
+  const correct = hiddenPos[hiddenIdx];
+
+  if (num === correct) {
+    busy = true;
+    btn.classList.add('correct');
+    const tick = document.getElementById('t-' + correct);
+    tick.className = 'tick-num revealed';
+    tick.textContent = correct;
+    hiddenIdx++;
+
+    if (hiddenIdx >= hiddenPos.length) {
+      onCorrect(() => generateRound());
+    } else {
+      setTimeout(() => {
+        btn.classList.remove('correct');
+        btn.classList.add('disabled');
+        highlightActiveQ();
+        busy = false;
+      }, 450);
+    }
+  } else {
+    busy = true;
+    btn.classList.add('wrong');
+    onWrong();
+    setTimeout(() => { btn.classList.remove('wrong'); busy = false; }, 500);
+  }
+}
+
+// ===== 3. VAD ÄR NÄRMAST? =====
+function genNearest() {
+  $('targetArea').innerHTML = '';
+  $('answerCard').style.display = '';
+
+  // Pick target number
+  const target = rand(MIN + 2, MAX - 2);
+
+  // Pick two options on different sides (or different distances)
+  let a, b;
+  do {
+    a = rand(MIN, MAX);
+    b = rand(MIN, MAX);
+  } while (a === b || a === target || b === target || Math.abs(a - target) === Math.abs(b - target));
+
+  const correctAns = Math.abs(a - target) < Math.abs(b - target) ? a : b;
+
+  $('nlPrompt').innerHTML = `Vilket tal ligger närmast <span class="highlight">${target}</span>?`;
+  $('answerLabel').textContent = 'Tryck på rätt svar:';
+
+  buildNumberLine(i => {
+    if (i === target) return 'highlight';
+    if (i === a) return 'option-a';
+    if (i === b) return 'option-b';
+    return 'show';
+  });
+
+  const row = document.createElement('div');
+  row.className = 'choice-row';
+
+  [a, b].forEach(n => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = n;
+    btn.addEventListener('click', () => handleNearestTap(btn, n, correctAns));
+    row.appendChild(btn);
+  });
+
+  $('answerArea').innerHTML = '';
+  $('answerArea').appendChild(row);
+}
+
+function handleNearestTap(btn, picked, correct) {
+  if (busy) return;
+  if (picked === correct) {
+    busy = true;
+    btn.classList.add('correct');
+    onCorrect(() => generateRound());
+  } else {
+    busy = true;
+    btn.classList.add('wrong');
+    onWrong();
+    setTimeout(() => { btn.classList.remove('wrong'); busy = false; }, 500);
+  }
+}
+
+// ===== 4. HOPPA PÅ TALLINJEN =====
+function genJump() {
+  $('targetArea').innerHTML = '';
+  $('answerCard').style.display = '';
+
+  // Decide direction
+  const forward = Math.random() < 0.65;
+  let start, steps, answer;
+
+  if (forward) {
+    steps = rand(1, 4);
+    start = rand(MIN, MAX - steps);
+    answer = start + steps;
+  } else {
+    steps = rand(1, 4);
+    start = rand(MIN + steps, MAX);
+    answer = start - steps;
+  }
+
+  const dirText = forward ? 'framåt' : 'bakåt';
+  $('nlPrompt').innerHTML = `Starta på <span class="highlight">${start}</span>, hoppa <span class="highlight">${steps}</span> steg ${dirText}`;
+  $('answerLabel').textContent = 'Var hamnar du?';
+
+  buildNumberLine(i => {
+    if (i === start) return 'jump-start';
+    return 'show';
+  });
+
+  // Draw arrow via SVG
+  drawJumpArrow(start, answer, forward);
+
+  // Answer buttons
+  const distractors = new Set();
+  distractors.add(answer);
+  // Add nearby wrong answers
+  const nearby = [answer - 1, answer + 1, answer - 2, answer + 2, start].filter(
+    n => n >= MIN && n <= MAX && n !== answer
+  );
+  shuffle(nearby).forEach(n => { if (distractors.size < 4) distractors.add(n); });
+  while (distractors.size < 4) {
+    const d = rand(MIN, MAX);
+    if (d !== answer) distractors.add(d);
+  }
+
+  const opts = shuffle([...distractors]);
+  const grid = document.createElement('div');
+  grid.className = 'answer-grid';
+  opts.forEach(n => {
+    const b = document.createElement('button');
+    b.className = 'ans-btn';
+    b.textContent = n;
+    b.addEventListener('click', () => handleJumpTap(b, n, answer));
+    grid.appendChild(b);
+  });
+  $('answerArea').innerHTML = '';
+  $('answerArea').appendChild(grid);
+}
+
+function drawJumpArrow(start, end, forward) {
+  const nl = $('numberLine');
+  // Remove old arrow layer
+  const old = nl.querySelector('.jump-arrow-layer');
+  if (old) old.remove();
+
+  const totalTicks = MAX - MIN + 1;
+  const ticks = nl.querySelectorAll('.tick');
+  if (ticks.length < 2) return;
+
+  // Get positions based on tick elements after render
+  setTimeout(() => {
+    const nlRect = nl.getBoundingClientRect();
+    const startTick = ticks[start - MIN];
+    const endTick = ticks[end - MIN];
+    if (!startTick || !endTick) return;
+
+    const sx = startTick.getBoundingClientRect().left + startTick.offsetWidth / 2 - nlRect.left;
+    const ex = endTick.getBoundingClientRect().left + endTick.offsetWidth / 2 - nlRect.left;
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'jump-arrow-layer');
+    svg.style.cssText = `position:absolute;top:-20px;left:0;width:100%;height:40px;overflow:visible;pointer-events:none;`;
+
+    const midX = (sx + ex) / 2;
+    const arcH = -25;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M ${sx} 30 Q ${midX} ${30 + arcH} ${ex} 30`);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', '#9b5c8f');
+    path.setAttribute('stroke-width', '2.5');
+    path.setAttribute('stroke-dasharray', '6 4');
+    path.setAttribute('marker-end', 'url(#arrow)');
+
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+    marker.setAttribute('id', 'arrow');
+    marker.setAttribute('viewBox', '0 0 10 10');
+    marker.setAttribute('refX', '8');
+    marker.setAttribute('refY', '5');
+    marker.setAttribute('markerWidth', '8');
+    marker.setAttribute('markerHeight', '8');
+    marker.setAttribute('orient', 'auto-start-reverse');
+    const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    poly.setAttribute('points', '0 0, 10 5, 0 10');
+    poly.setAttribute('fill', '#9b5c8f');
+    marker.appendChild(poly);
+    defs.appendChild(marker);
+    svg.appendChild(defs);
+    svg.appendChild(path);
+
+    nl.style.position = 'relative';
+    nl.appendChild(svg);
+  }, 50);
+}
+
+function handleJumpTap(btn, picked, correct) {
+  if (busy) return;
+  if (picked === correct) {
+    busy = true;
+    btn.classList.add('correct');
+    // Highlight landing on number line
+    const tick = document.getElementById('t-' + correct);
+    if (tick) { tick.classList.add('revealed'); }
+    onCorrect(() => generateRound());
+  } else {
+    busy = true;
+    btn.classList.add('wrong');
+    onWrong();
+    setTimeout(() => { btn.classList.remove('wrong'); busy = false; }, 500);
+  }
+}
+
+// ===== NUMBER LINE BUILDER =====
+// typeForIndex(i) returns: 'show' | 'empty' | 'slot' | 'question' | 'highlight' | 'option-a' | 'option-b' | 'jump-start'
+function buildNumberLine(typeForIndex) {
+  const nl = $('numberLine');
+  nl.innerHTML = '<div class="nl-track"></div>';
+
+  for (let i = MIN; i <= MAX; i++) {
+    const tick = document.createElement('div');
+    tick.className = 'tick';
+
+    const bar = document.createElement('div');
+    bar.className = 'tick-bar';
+
+    const num = document.createElement('div');
+    num.className = 'tick-num';
+    num.id = 't-' + i;
+    num.dataset.num = i;
+
+    const type = typeForIndex(i);
+
+    switch(type) {
+      case 'show':
+        num.textContent = i;
+        break;
+      case 'empty':
+        num.classList.add('empty');
+        num.textContent = i;
+        break;
+      case 'slot':
+        num.classList.add('slot');
+        num.textContent = i; // text hidden via CSS
+        break;
+      case 'question':
+        num.classList.add('q');
+        num.textContent = '?';
+        break;
+      case 'highlight':
+        num.classList.add('nl-highlight');
+        num.textContent = i;
+        break;
+      case 'option-a':
+        num.classList.add('nl-option-a');
+        num.textContent = i;
+        break;
+      case 'option-b':
+        num.classList.add('nl-option-b');
+        num.textContent = i;
+        break;
+      case 'jump-start':
+        num.classList.add('jump-start');
+        num.textContent = i;
+        break;
+    }
+
+    tick.appendChild(bar);
+    tick.appendChild(num);
+    nl.appendChild(tick);
+  }
+}
+</script>
+</body>
+</html>
