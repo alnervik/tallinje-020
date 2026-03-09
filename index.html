@@ -256,6 +256,16 @@
     font-size: 1.2rem;
   }
 
+  .nl-prompt .highlight-sky {
+    display: inline-block;
+    background: var(--sky-light);
+    color: var(--sky);
+    padding: 2px 12px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 1.2rem;
+  }
+
   .number-line {
     position: relative;
     width: 100%;
@@ -310,16 +320,17 @@
   }
 
   .tick-num.q {
-    background: var(--accent-light);
-    color: var(--accent);
+    background: #fce4e4;
+    color: #d44;
     font-weight: 800;
-    border: 2.5px solid var(--accent);
+    border: 2.5px solid #e88;
     animation: pulse-q 2s ease-in-out infinite;
   }
 
   .tick-num.q.active-q {
-    background: var(--accent);
+    background: #d33;
     color: #fff;
+    border-color: #d33;
     animation: pulse-qa 1.2s ease-in-out infinite;
     transform: scale(1.08);
   }
@@ -477,6 +488,13 @@
     background: var(--sky-light);
     color: var(--sky);
     border: 2.5px solid var(--sky);
+    font-weight: 800;
+  }
+
+  .tick-num.nl-option-neutral {
+    background: #f0ebe4;
+    color: var(--text);
+    border: 2.5px solid var(--line-color);
     font-weight: 800;
   }
 
@@ -722,6 +740,9 @@ let busy = false;
 let hiddenPos = [];
 let hiddenIdx = 0;
 
+// Jump-mode state
+let jumpRoundCount = 0;
+
 // Color map
 const colorMap = {
   place:   { title: 't-primary', bar: 'c-primary' },
@@ -788,6 +809,7 @@ function startGame(m) {
   mode = m;
   streak = 0;
   busy = false;
+  jumpRoundCount = 0;
 
   const cm = colorMap[m];
   $('gameTitle').textContent = titleMap[m];
@@ -810,6 +832,7 @@ function closeDone() {
 function restartExercise() {
   closeDone();
   streak = 0;
+  jumpRoundCount = 0;
   updateProgress();
   generateRound();
 }
@@ -881,7 +904,7 @@ function genMissing() {
   const cands = [];
   for (let i = MIN + 1; i < MAX; i++) {
     cands.push(i);
-    if (i >= 11 && i <= 19) cands.push(i); // double weight for 11-19
+    if (i >= 11 && i <= 19) cands.push(i);
   }
   const picked = new Set();
   shuffle(cands).forEach(c => { if (picked.size < hideCount) picked.add(c); });
@@ -976,13 +999,13 @@ function genNearest() {
 
   const correctAns = Math.abs(a - target) < Math.abs(b - target) ? a : b;
 
-  $('nlPrompt').innerHTML = `Vilket tal ligger närmast <span class="highlight">${target}</span>?`;
+  $('nlPrompt').innerHTML = `Vilket tal ligger närmast <span class="highlight-sky">${target}</span>?`;
   $('answerLabel').textContent = 'Tryck på rätt svar:';
 
   buildNumberLine(i => {
     if (i === target) return 'highlight';
-    if (i === a) return 'option-a';
-    if (i === b) return 'option-b';
+    if (i === a) return 'option-neutral';
+    if (i === b) return 'option-neutral';
     return 'show';
   });
 
@@ -1034,7 +1057,7 @@ function genJump() {
     answer = start - steps;
   }
 
-  const dirText = forward ? 'framåt' : 'bakåt';
+  const dirText = forward ? 'framåt ➡️' : '⬅️ bakåt';
   $('nlPrompt').innerHTML = `Starta på <span class="highlight">${start}</span>, hoppa <span class="highlight">${steps}</span> steg ${dirText}`;
   $('answerLabel').textContent = 'Var hamnar du?';
 
@@ -1043,8 +1066,11 @@ function genJump() {
     return 'show';
   });
 
-  // Draw arrow via SVG
-  drawJumpArrow(start, answer, forward);
+  // Only show the helper arrow on the very first round
+  if (jumpRoundCount === 0) {
+    drawJumpArrow(start, answer, forward);
+  }
+  jumpRoundCount++;
 
   // Answer buttons
   const distractors = new Set();
@@ -1148,7 +1174,6 @@ function handleJumpTap(btn, picked, correct) {
 }
 
 // ===== NUMBER LINE BUILDER =====
-// typeForIndex(i) returns: 'show' | 'empty' | 'slot' | 'question' | 'highlight' | 'option-a' | 'option-b' | 'jump-start'
 function buildNumberLine(typeForIndex) {
   const nl = $('numberLine');
   nl.innerHTML = '<div class="nl-track"></div>';
@@ -1177,7 +1202,7 @@ function buildNumberLine(typeForIndex) {
         break;
       case 'slot':
         num.classList.add('slot');
-        num.textContent = i; // text hidden via CSS
+        num.textContent = i;
         break;
       case 'question':
         num.classList.add('q');
@@ -1185,6 +1210,10 @@ function buildNumberLine(typeForIndex) {
         break;
       case 'highlight':
         num.classList.add('nl-highlight');
+        num.textContent = i;
+        break;
+      case 'option-neutral':
+        num.classList.add('nl-option-neutral');
         num.textContent = i;
         break;
       case 'option-a':
